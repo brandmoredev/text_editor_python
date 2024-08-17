@@ -95,9 +95,6 @@ class TextEditor:
         self.window.mainloop()
 
     def update_selected_text(self, event=None):
-        # Remove any existing tags for the previously selected text
-        self.text_area.tag_remove("selected_text", "1.0", "end")
-
         #get range of selected text
         ranges = self.text_area.tag_ranges("sel") 
 
@@ -107,11 +104,12 @@ class TextEditor:
         #Update self.selected_text_range
         start, end = ranges
         self.selected_text_range = (start, end)
+        print(self.selected_text_range)
 
     def change_color(self):
         # Check if there is a valid selection
         if self.selected_text_range:
-            tag_name = "selected_text"
+            tag_name = "selected_text" + str(self.selected_text_range)
             
             # Add the tag to the selected range
             self.text_area.tag_add(tag_name, *self.selected_text_range)
@@ -132,7 +130,8 @@ class TextEditor:
 
 
     def new_file(self):
-        pass
+        new_editor = TextEditor()
+        new_editor.window.title("Untitled")
 
     def open_file(self):
         pass
