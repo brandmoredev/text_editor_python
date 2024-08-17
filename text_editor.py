@@ -144,14 +144,28 @@ class TextEditor:
                 content = file.read()
                 self.text_area.delete(1.0, END)
                 self.text_area.insert(1.0, content)
-            except Exception as e:
-                showerror("Error", f"Can't open existing file: {e}")
+            except Exception:
+                showerror("Error", f"Can't open existing file")
             finally:
                 file.close()
                 
 
     def save_file(self):
-        pass
+        file_name = self.window.title()
+        file = filedialog.asksaveasfilename(initialfile=file_name,
+                                            defaultextension=".txt",
+                                            filetypes=[("Text Documents", "*.txt")])
+        if file is None:
+            return
+        else:
+            try:
+                file = open(file, "w")
+
+                file.write(self.text_area.get(1.0, END))
+            except Exception:
+                return
+            finally:
+                file.close()
 
     def cut(self):
         self.text_area.event_generate("<<Cut>>")
