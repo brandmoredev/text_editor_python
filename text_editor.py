@@ -99,12 +99,12 @@ class TextEditor:
         ranges = self.text_area.tag_ranges("sel") 
 
         if not ranges or len(ranges) < 2:
+            self.selected_text_range = None
             return
 
         #Update self.selected_text_range
         start, end = ranges
         self.selected_text_range = (start, end)
-        print(self.selected_text_range)
 
     def change_color(self):
         # Check if there is a valid selection
@@ -134,7 +134,21 @@ class TextEditor:
         new_editor.window.title("Untitled")
 
     def open_file(self):
-        pass
+        file = filedialog.askopenfile(defaultextension=".txt", filetypes=[("Text Documents", "*.txt")])
+
+        if file:
+            try:
+                self.window.title(os.path.basename(file.name))
+
+                # Read content from the file and insert it into the new text area
+                content = file.read()
+                self.text_area.delete(1.0, END)
+                self.text_area.insert(1.0, content)
+            except Exception as e:
+                showerror("Error", f"Can't open existing file: {e}")
+            finally:
+                file.close()
+                
 
     def save_file(self):
         pass
