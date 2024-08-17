@@ -1,5 +1,6 @@
 import os
 from tkinter import *
+import tkinter as tk
 from tkinter import filedialog, colorchooser, font
 from tkinter.messagebox import *
 from tkinter.filedialog import *
@@ -41,8 +42,6 @@ class TextEditor:
         #bind mouse click release with text area
         self.text_area.bind("<<Selection>>", self.update_selected_text)
 
-
-        
         #allows expansion of text_area with respect to window size
         self.window.grid_rowconfigure(0, weight=1)
         self.window.grid_columnconfigure(0, weight=1)
@@ -63,11 +62,44 @@ class TextEditor:
         self.font_size_box = Spinbox(self.frame, from_=6, to=100, increment=2, width=6, textvariable=self.font_size, command=self.change_font)
         self.font_size_box.grid(row=0, column=2)
 
+        #MENU OPTIONS
+        self.menu_bar = Menu(self.window)
+        self.window.config(menu=self.menu_bar)
+
+        #File Menu
+        file_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="File", menu=file_menu)
+
+        file_menu.add_command(label="New", command=self.new_file)
+        file_menu.add_command(label="Open", command=self.open_file)
+        file_menu.add_command(label="Save", command=self.save_file)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.quit)
+
+        #Edit Menu
+        edit_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
+
+        edit_menu.add_command(label="Cut", command=self.cut)
+        edit_menu.add_command(label="Copy", command=self.copy)
+        edit_menu.add_command(label="Paste", command=self.paste)
+
+        #Help Menu
+        help_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Help", menu=help_menu)
+
+        help_menu.add_command(label="About", command=self.about)
+
+
         #initialize window
         self.window.mainloop()
 
     def update_selected_text(self, event=None):
-        ranges = self.text_area.tag_ranges("sel") #get range of selected text
+        # Remove any existing tags for the previously selected text
+        self.text_area.tag_remove("selected_text", "1.0", "end")
+
+        #get range of selected text
+        ranges = self.text_area.tag_ranges("sel") 
 
         if not ranges or len(ranges) < 2:
             return
@@ -79,7 +111,7 @@ class TextEditor:
     def change_color(self):
         # Check if there is a valid selection
         if self.selected_text_range:
-            tag_name = "selected_text" + str(self.selected_text_range)
+            tag_name = "selected_text"
             
             # Add the tag to the selected range
             self.text_area.tag_add(tag_name, *self.selected_text_range)
@@ -109,19 +141,19 @@ class TextEditor:
         pass
 
     def cut(self):
-        pass
+        self.text_area.event_generate("<<Cut>>")
 
-    def copy():
-        pass
+    def copy(self):
+        self.text_area.event_generate("<<Copy>>")
 
-    def paste():
-        pass
+    def paste(self):
+        self.text_area.event_generate("<<Paste>>")
 
-    def about():
-        pass
+    def about(self):
+        showinfo("Text Editor", "This text editor is built with Python and Tkinter widgets")
 
-    def quit():
-        pass
+    def quit(self):
+        self.window.destroy()
 
 app = TextEditor()
 
