@@ -133,39 +133,85 @@ class TextEditor:
         new_editor = TextEditor()
         new_editor.window.title("Untitled")
 
+
     def open_file(self):
         file = filedialog.askopenfile(defaultextension=".txt", filetypes=[("Text Documents", "*.txt")])
-
         if file:
             try:
                 self.window.title(os.path.basename(file.name))
 
-                # Read content from the file and insert it into the new text area
+                # Read the entire file content
                 content = file.read()
-                self.text_area.delete(1.0, END)
-                self.text_area.insert(1.0, content)
-            except Exception:
-                showerror("Error", f"Can't open existing file")
+                
+                # Separate content and tags if they are separated by a specific marker, e.g., "<TAGS>"
+                if "<TAGS>" in content:
+                    content, tags_section = content.split("<TAGS>", 1)
+                    
+                    # Insert content into text_area
+                    self.text_area.delete(1.0, END)
+                    self.text_area.insert(1.0, content)
+
+                    # Process tags
+                    lines = tags_section.strip().split('\n')
+                    print(lines)
+
+                    for line in lines:
+                        parts = line.split('/')
+                        if len(parts) == 5:  # Ensure there are 5 parts
+                            tag, start, end, color, font = parts
+                            tag = tag.strip()
+                            start = start.strip()
+                            end = end.strip()
+                            color = color.strip() if color.strip() else self.text_area.cget("foreground")
+                            font = font.strip().split() if font.strip() else self.text_area.cget("font").split()
+                        
+                            print(parts)
+
+                            # Add and configure tags
+                            self.text_area.tag_add(tag, start, end)
+                            self.text_area.tag_config(tag, foreground=color, font=(font[0], int(font[1])))
+                else:
+                    # No tags section found, just insert content
+                    self.text_area.delete(1.0, END)
+                    self.text_area.insert(1.0, content)
+                    
+            except Exception as e:
+                showerror("Error", f"Can't open existing file: {e}")
             finally:
                 file.close()
-                
 
     def save_file(self):
         file_name = self.window.title()
-        file = filedialog.asksaveasfilename(initialfile=file_name,
-                                            defaultextension=".txt",
-                                            filetypes=[("Text Documents", "*.txt")])
-        if file is None:
+        file_path = filedialog.asksaveasfilename(initialfile=file_name,
+                                                defaultextension=".txt",
+                                                filetypes=[("Text Documents", "*.txt")])
+        if not file_path:
             return
-        else:
-            try:
-                file = open(file, "w")
-
+        try:
+            with open(file_path, "w") as file:
+                # Write content
                 file.write(self.text_area.get(1.0, END))
-            except Exception:
-                return
-            finally:
-                file.close()
+
+                # Save tags and their configurations
+                tags = self.text_area.tag_names()
+                tags_data = []
+                for tag in tags:
+                    if tag == "sel":  # Skip the "sel" tag which is for selection
+                        continue
+                    ranges = self.text_area.tag_ranges(tag)
+                    if ranges:
+                        for start, end in zip(ranges[::2], ranges[1::2]):
+                            tag_info = f"{tag}/{self.text_area.index(start)}/{self.text_area.index(end)}/"
+                            tag_info += f"{self.text_area.tag_cget(tag, 'foreground')}/"
+                            tag_info += f"{self.text_area.tag_cget(tag, 'font')}\n"
+                            tags_data.append(tag_info)
+                
+                if tags_data:
+                    file.write("<TAGS>\n")
+                    file.writelines(tags_data)
+        except Exception as e:
+            showerror("Error", f"Can't save file: {e}")
+
 
     def cut(self):
         self.text_area.event_generate("<<Cut>>")
