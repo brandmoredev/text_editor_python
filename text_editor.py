@@ -153,7 +153,6 @@ class TextEditor:
 
                     # Process tags
                     lines = tags_section.strip().split('\n')
-                    print(lines)
 
                     for line in lines:
                         parts = line.split('/')
@@ -165,8 +164,6 @@ class TextEditor:
                             color = color.strip() if color.strip() else self.text_area.cget("foreground")
                             font = font.strip().split() if font.strip() else self.text_area.cget("font").split()
                         
-                            print(parts)
-
                             # Add and configure tags
                             self.text_area.tag_add(tag, start, end)
                             self.text_area.tag_config(tag, foreground=color, font=(font[0], int(font[1])))
